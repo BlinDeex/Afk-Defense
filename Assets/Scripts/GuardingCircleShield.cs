@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GuardingCircleShield : MonoBehaviour
+public class GuardingCircleShield : MonoBehaviour, INonEnemyObstacle
 {
     [SerializeField] BaseEnemy _root;
     [SerializeField] ParticleSystem _hitEffect;
@@ -21,7 +21,7 @@ public class GuardingCircleShield : MonoBehaviour
 
     [SerializeField] float percentHealth;
 
-    bool _active = false;
+    bool _shieldActive;
 
     private void Awake()
     {
@@ -30,13 +30,21 @@ public class GuardingCircleShield : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (!_active) return;
-
         IProjectile IProj = collision.GetComponent<IProjectile>();
-        Vector2 hitPoint = IProj.ReturnRaycastHitPoint();
+        Vector2 hitPoint;
         Vector2 lastDir = IProj.ReturnLastProjectileDirection();
+        if (IProj.HasHitPointValue())
+        {
+            hitPoint = IProj.ReturnRaycastHitPoint();
+        }
+        else
+        {
+            hitPoint = collision.transform.position;
+        }
+
         float damageTaken = IProj.ReturnProjectileDamage();
         IProj.NonEnemyHitReturnProjectile();
+        Debug.Log("projectile hit shield");
 
         ParticleSystem borrowedEffect = DynamicObjectPooler.Instance.BorrowEffect(_hitEffect);
         borrowedEffect.transform.position = hitPoint;
@@ -52,11 +60,6 @@ public class GuardingCircleShield : MonoBehaviour
         UpdateColorAndHealth(damageTaken);
     }
 
-    private void FixedUpdate()
-    {
-        if (!_active) _active = true;
-    }
-
     void UpdateColorAndHealth(float damageTaken = 0)
     {
         _currentShieldHealth -= damageTaken;
@@ -65,17 +68,29 @@ public class GuardingCircleShield : MonoBehaviour
 
         if (percentHealth <= 0)
         {
-            DynamicObjectPooler.Instance.RequestInstantEffect(_shieldBreakEffect, transform.position, transform.rotation, 80);
-            gameObject.SetActive(false);
+            BreakShield();
         }
+    }
+
+    public void BreakShield()
+    {
+        if (!_shieldActive) return;
+
+        _shieldActive = false;
+        DynamicObjectPooler.Instance.RequestInstantEffect(_shieldBreakEffect, transform.position, transform.rotation, 80);
+        gameObject.SetActive(false);
     }
 
     public void PrepareShield(float health)
     {
+        _shieldActive = true;
         _currentShieldHealth = _maxShieldHealth = health * 5f;
         percentHealth = _currentShieldHealth / _maxShieldHealth;
         UpdateColorAndHealth();
     }
 
-    public void DeactivateShield() => _active = false;
+    public void ProjectileHit()
+    {
+
+    }
 }

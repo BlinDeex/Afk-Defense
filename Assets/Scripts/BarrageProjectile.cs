@@ -11,50 +11,57 @@ public class BarrageProjectile : MonoBehaviour, IProjectile
     [field: SerializeField] public bool HasTarget { get; private set; }
 
     bool _willHitNextUpdate;
-    bool _firstFrame = true;
-    int _bothMasks = 4160;
+    bool _hasHitPoint;
+    int BOTH_MASKS;
     int ticksSinceNoTarget;
     int _targetUID;
     float _damage;
     float _speed;
-    Vector3 _lastVelocityDir;
+    Vector2 _lastNormalHit;
+    Vector3 _lastVelocityDirNormalized;
     Vector3 _lastDistanceTraveled;
     Vector3 _oldPosition;
     Vector3 _lastHitPoint;
-    Vector2 _lastNormalHit;
 
     ParticleSystem _borrowedTrail;
 
     public void PrepareProjectile(BaseEnemy target, float damage, float speed, Vector3 lastDir)
     {
         _target = target;
+        _targetUID = target.UID;
         _damage = damage;
         _speed = speed;
-        _firstFrame = true;
-        _lastVelocityDir = lastDir;
-        _willHitNextUpdate = false;
-
-        ticksSinceNoTarget = 0;
-        _targetUID = target.UID;
-        HasTarget = true;
-
+        _lastVelocityDirNormalized = lastDir;
+        ResetValues();
 
         _borrowedTrail = DynamicObjectPooler.Instance.BorrowEffect(_projectileTrail);
-
         _borrowedTrail.transform.position = transform.position;
         var emission = _borrowedTrail.emission;
         emission.rateOverDistance = _trailParticlesCount;
         _borrowedTrail.Play();
     }
 
+    void ResetValues()
+    {
+        ticksSinceNoTarget = 0;
+        _willHitNextUpdate = false;
+        _hasHitPoint = false;
+        HasTarget = true;
+    }
+
+    private void Awake()
+    {
+        BOTH_MASKS = LayerMask.GetMask("Enemy", "NonEnemyObstacle");
+    }
+
     private void Update()
     {
-       Trail();
+        _borrowedTrail.transform.position = transform.position;
     }
 
     private void FixedUpdate()
     {
-        if (!HasTarget) ticksSinceNoTarget++;
+        if(!HasTarget) ticksSinceNoTarget++;
 
         MoveProjectile();
 
@@ -65,26 +72,23 @@ public class BarrageProjectile : MonoBehaviour, IProjectile
     {
         DynamicObjectPooler.Instance.RequestInstantEffect(_projectileHitEffect, transform.position, Quaternion.identity, 30);
         
-        if(collision.TryGetComponent(out BaseEnemy enemy)) enemy.TakeDamage(_damage);
-        
-        ReturnProjectile();
+        if(collision.TryGetComponent(out BaseEnemy enemy))
+        {
+            enemy.TakeDamage(_damage);
+            ReturnProjectile();
+            return;
+        }
     }
 
     void MoveProjectile()
     {
-        if (!_target.gameObject.activeSelf || _target.UID != _targetUID || _target == null)
-        {
-            if (_firstFrame) ReturnProjectile();
-            HasTarget = false;
-        }
-        if (_willHitNextUpdate) // teleport to raycast hit so physics can catch collision
-        {
-            transform.position = _lastHitPoint;
-            if (!Physics2D.OverlapPoint(transform.position)) // this might be related cause without it some projectiles will be left frozen behind
-            {
-                ReturnProjectile();
-            }
+        if (!_target.gameObject.activeSelf || _target.UID != _targetUID || _target == null) HasTarget = false;
 
+        if (_willHitNextUpdate)
+        {
+            _willHitNextUpdate = false;
+            transform.position = _lastHitPoint;
+            _hasHitPoint = false;
             return;
         }
 
@@ -92,28 +96,27 @@ public class BarrageProjectile : MonoBehaviour, IProjectile
 
         if (HasTarget)
         {
-
             _oldPosition = transform.position;
             transform.position = Vector3.MoveTowards(transform.position, _target.transform.position, _speed * Time.fixedDeltaTime);
             _lastDistanceTraveled = transform.position - _oldPosition;
-            _lastVelocityDir = _lastDistanceTraveled.normalized;
+            _lastVelocityDirNormalized = _lastDistanceTraveled.normalized;
         }
         else
         {
-            transform.position += _lastVelocityDir * _speed * Time.fixedDeltaTime;
+            transform.position += _speed * Time.fixedDeltaTime * _lastVelocityDirNormalized;
         }
 
-        FutureHitCheck(); // get majority of values used in GuardingCircleShield class
-
-        _firstFrame = false;
+        FutureHitCheck();
     }
 
     void FutureHitCheck()
     {
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, _lastVelocityDir, _lastDistanceTraveled.magnitude, _bothMasks);
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, _lastVelocityDirNormalized, _lastDistanceTraveled.magnitude, BOTH_MASKS);
+        Debug.DrawRay(transform.position, _lastVelocityDirNormalized * _lastDistanceTraveled.magnitude, Color.red);
         if(hit == true)
         {
             _willHitNextUpdate = true;
+            _hasHitPoint = true;
             _lastHitPoint = hit.point;
             _lastNormalHit = hit.normal;
         }
@@ -135,18 +138,13 @@ public class BarrageProjectile : MonoBehaviour, IProjectile
         gameObject.SetActive(false);
     }
 
-    void Trail()
-    {
-        _borrowedTrail.transform.position = transform.position;
-    }
-
     public Vector2 ReturnRaycastHitNormal() => _lastNormalHit;
 
     public Vector2 ReturnRaycastHitPoint() => _lastHitPoint;
 
     public float ReturnProjectileDamage() => _damage;
 
-    public Vector2 ReturnLastProjectileDirection() => _lastVelocityDir;
+    public Vector2 ReturnLastProjectileDirection() => _lastVelocityDirNormalized;
 
     public void NonEnemyHitReturnProjectile()
     {
@@ -159,4 +157,6 @@ public class BarrageProjectile : MonoBehaviour, IProjectile
         gameObject.SetActive(false);
         DynamicObjectPooler.Instance.ReturnProjectile(gameObject);
     }
+
+    public bool HasHitPointValue() => _hasHitPoint;
 }

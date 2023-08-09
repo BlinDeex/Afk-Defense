@@ -1,5 +1,3 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -12,7 +10,8 @@ public class TargetProvider : MonoBehaviour
 
     public static TargetProvider Instance;
 
-    [SerializeField] int _smalledUIDAlive;
+    [field: SerializeField] public int EnemiesAlive { get; private set; }
+
 
     private void Awake()
     {
@@ -22,18 +21,17 @@ public class TargetProvider : MonoBehaviour
     public void RegisterActiveEnemy(BaseEnemy enemy)
     {
         ActiveEnemies.Add(enemy);
+        EnemiesAlive++;
     }
 
     public void RemoveActiveEnemy(BaseEnemy enemy)
     {
         ActiveEnemies.Remove(enemy);
+        EnemiesAlive--;
     }
 
     private void FixedUpdate()
     {
-        if(ActiveEnemies.Count > 0)
-        _smalledUIDAlive = ActiveEnemies.Min(x => x.UID);
-
         SortedEnemiesByDistance = ActiveEnemies.OrderBy(x => x.CurrentDistanceToFinish).ToList();
     }
 

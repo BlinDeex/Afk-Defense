@@ -1,10 +1,5 @@
-using NUnit.Framework.Internal;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 public class DynamicObjectPooler : MonoBehaviour
 {
@@ -31,10 +26,6 @@ public class DynamicObjectPooler : MonoBehaviour
     private void Awake()
     {
         Instance = this;
-    }
-
-    private void FixedUpdate()
-    {
     }
 
     public GameObject RequestEnemy(GameObject requestedObject)
@@ -116,6 +107,21 @@ public class DynamicObjectPooler : MonoBehaviour
         newEffect.Emit(particlesCount);
     }
 
+    public void RequestInstantEffect(ParticleSystem effect, Vector3 position, int particlesCount)
+    {
+        if (InstantEffectPools.TryGetValue(effect.name, out ParticleSystem ps))
+        {
+            ps.transform.position = position;
+            ps.Emit(particlesCount);
+            return;
+        }
+
+        ParticleSystem newEffect = Instantiate(effect);
+        InstantEffectPools.Add(effect.name, newEffect);
+        newEffect.transform.position = position;
+        newEffect.Emit(particlesCount);
+    }
+
     public GameObject RequestCurrencyEffect(GameObject currencyEffect)
     {
         string name = currencyEffect.name;
@@ -135,6 +141,4 @@ public class DynamicObjectPooler : MonoBehaviour
         string actualName = gameObject.name[..^7];
         CurrencyEffectPools[actualName].Enqueue(gameObject);
     }
-
-    
 }

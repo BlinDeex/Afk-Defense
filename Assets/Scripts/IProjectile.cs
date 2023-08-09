@@ -13,4 +13,6 @@ interface IProjectile
     public abstract float ReturnProjectileDamage();
 
     public abstract Vector2 ReturnLastProjectileDirection();
+
+    public abstract bool HasHitPointValue();
 }

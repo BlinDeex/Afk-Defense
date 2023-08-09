@@ -36,25 +36,7 @@ public class BarrageTurretLogic : BaseTurret
         }
     }
 
-    IEnumerator ShootCycle()
-    {
-        foreach ((Transform, BarrageOrb, ParticleSystem) outerOrb in _outerOrbs)
-        {
-            if (!NewShoot(outerOrb.Item1, outerOrb.Item3))
-            {
-                _isShooting = false;
-                break;
-            }
-
-            for (int i = 0; i < _ticksBetweenShootSteps; i++) yield return new WaitForFixedUpdate();
-
-            //if (!_isShooting) break;
-
-        }
-        _isShooting = false;
-    }
-
-    bool NewShoot(Transform outerOrb, ParticleSystem shootPS)
+    bool TryShoot(Transform outerOrb, ParticleSystem shootPS)
     {
         if(TargetProvider.Instance.TryGetClosestEnemy(_turretRange / 100f, out BaseEnemy enemy))
         {
@@ -70,12 +52,27 @@ public class BarrageTurretLogic : BaseTurret
         return false;
     }
 
+    IEnumerator ShootCycle()
+    {
+        foreach ((Transform, BarrageOrb, ParticleSystem) outerOrb in _outerOrbs)
+        {
+            if (!TryShoot(outerOrb.Item1, outerOrb.Item3))
+            {
+                _isShooting = false;
+                break;
+            }
+
+            for (int i = 0; i < _ticksBetweenShootSteps; i++) yield return new WaitForFixedUpdate();
+
+            //if (!_isShooting) break;
+
+        }
+        _isShooting = false;
+    }
+
     void IncreaseOrbs(int amount) // irrelevant
     {
-        if (_isShooting)
-        {
-            StopCoroutine(ShootCycle());
-        }
+        if (_isShooting) StopCoroutine(ShootCycle());
 
         for (int i = 0; i < amount; i++)
         {
@@ -96,8 +93,12 @@ public class BarrageTurretLogic : BaseTurret
                 outer.Item2.UpdateAngle(angleIncrement * multiplier);
                 multiplier++;
             }
-
         }
         _isShooting = false;
+    }
+
+    public override void ApplyUpgrade(int index)
+    {
+
     }
 }

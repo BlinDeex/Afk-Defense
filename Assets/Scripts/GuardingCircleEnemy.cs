@@ -5,6 +5,15 @@ public class GuardingCircleEnemy : BaseEnemy
     [SerializeField] GuardingCircleShield[] _circleShields;
     [SerializeField] float _rotationSpeed;
     [SerializeField] Transform _centerSpriteT;
+    [SerializeField] ParticleSystem _killEffect;
+    [SerializeField] int _killParticlesCount;
+    Transform _t;
+
+
+    private void Awake()
+    {
+        _t = GetComponent<Transform>();
+    }
 
     private void FixedUpdate()
     {
@@ -31,9 +40,11 @@ public class GuardingCircleEnemy : BaseEnemy
     {
         foreach (GuardingCircleShield circleShield in _circleShields)
         {
-            circleShield.DeactivateShield();
+            circleShield.BreakShield();
             circleShield.gameObject.SetActive(false);
         }
+
+        DynamicObjectPooler.Instance.RequestInstantEffect(_killEffect, _t.position, _killParticlesCount);
 
         base.ReturnEnemy();
     }

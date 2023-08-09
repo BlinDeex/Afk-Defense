@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
@@ -11,9 +12,23 @@ public class UIManager : MonoBehaviour
     Color32 _green = new(0, 154, 0, 255);
     public static UIManager Instance;
 
+    [SerializeField] GameObject _buildPanelPrefab;
+    [SerializeField] GameObject _upgradePanelPrefab;
+
+    [SerializeField] GameObject _scrollPanelFrame;
+    [SerializeField] GameObject _scrollPanel;
+    [SerializeField] GameObject _mainPanel;
+
     private void Awake()
     {
         Instance = this;
+    }
+
+    public void AddUpgradeOption(string upgradeName, float initialStat, float newStat, string upgradeDesc, int upgradeCost, byte upgradeIndex)
+    {
+        GameObject newPanel = Instantiate(_upgradePanelPrefab, _scrollPanel.transform);
+        UpgradePanel newPanelInfo = newPanel.GetComponent<UpgradePanel>();
+        newPanelInfo.AssembleStats(upgradeName, initialStat, newStat, upgradeDesc, upgradeCost, upgradeIndex);
     }
 
     public void UpdateWaveText(int currentWave, int maxWave)
@@ -24,5 +39,45 @@ public class UIManager : MonoBehaviour
     public void EngageNextWaveTimer(float timeLeftInSeconds)
     {
         _nextWaveTimer.GetComponent<NextWaveTimer>().SetNextWaveTimer(timeLeftInSeconds);
+    }
+
+    public void AddBuildOption(string turretName, string turretTier, int cost, byte turretIndex)
+    {
+        GameObject newPanel = Instantiate(_buildPanelPrefab, _scrollPanel.transform);
+        BuildStatUI newPanelInfo = newPanel.GetComponent<BuildStatUI>();
+        newPanelInfo.AssembleBuildPanel(
+            turretName,
+            turretTier,
+            cost,
+            turretIndex);
+    }
+
+    public void ActivateMainUIPanel()
+    {
+        if (!_mainPanel.activeSelf)
+        {
+            _mainPanel.SetActive(true);
+        }
+    }
+
+    public void PullScrollRectToTop()
+    {
+        _scrollPanelFrame.GetComponent<ScrollRect>().verticalNormalizedPosition = 1;
+    }
+
+    public void DeactivateMainUIPanel()
+    {
+        if (_mainPanel.activeSelf)
+        {
+            _mainPanel.SetActive(false);
+        }
+    }
+
+    public void RemoveAllLeftPanelElements()
+    {
+        foreach (Transform child in _scrollPanel.transform)
+        {
+            Destroy(child.gameObject);
+        }
     }
 }

@@ -1,15 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class ShieldCircle : MonoBehaviour
 {
-    Transform _parent;
+    [SerializeField] Transform _parent;
     [SerializeField] float _rotationSpeed = 50f;
-    private void Awake()
-    {
-        _parent = gameObject.GetComponentInParent<Transform>();
-    }
 
     private void Update()
     {

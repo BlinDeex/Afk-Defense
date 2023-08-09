@@ -127,11 +127,6 @@ public abstract class BaseEnemy : MonoBehaviour
         CurrentDistanceToFinish = 999;
     }
 
-    private void OnEnable()
-    {
-        TargetProvider.Instance.RegisterActiveEnemy(this);
-    }
-
     private void OnDisable()
     {
         TargetProvider.Instance.RemoveActiveEnemy(this);
