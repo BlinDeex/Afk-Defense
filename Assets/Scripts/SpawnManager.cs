@@ -11,6 +11,7 @@ public class SpawnManager : MonoBehaviour
     [SerializeField] int _cooldownInTicks;
     [SerializeField] float _health;
     [SerializeField] float _movingPower;
+    [SerializeField] float _enemyDamage;
 
     int enemyUID = 1;
 
@@ -232,7 +233,7 @@ public class SpawnManager : MonoBehaviour
     {
         GameObject enemy = DynamicObjectPooler.Instance.RequestEnemy(basicEnemy);
         BaseEnemy baseEnemy = enemy.GetComponent<BaseEnemy>();
-        baseEnemy.PrepareEnemy(_health, _movingPower, enemyUID);
+        baseEnemy.PrepareEnemy(_health, _movingPower, enemyUID, _enemyDamage);
         enemyUID++;
         enemy.transform.position = _spawnPoint.transform.position + new Vector3(UnityEngine.Random.Range(-4f, 4f), 0, 0);
         enemy.SetActive(true);

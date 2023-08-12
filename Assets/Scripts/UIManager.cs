@@ -15,9 +15,13 @@ public class UIManager : MonoBehaviour
     [SerializeField] GameObject _buildPanelPrefab;
     [SerializeField] GameObject _upgradePanelPrefab;
 
-    [SerializeField] GameObject _scrollPanelFrame;
-    [SerializeField] GameObject _scrollPanel;
-    [SerializeField] GameObject _mainPanel;
+    [SerializeField] GameObject _buildScrollPanelFrame;
+    [SerializeField] GameObject _buildScrollPanel;
+    [SerializeField] GameObject _buildMenu;
+
+    [SerializeField] GameObject _upgradeMenu;
+    [SerializeField] GameObject _upgradeScrollPanelFrame;
+    [SerializeField] GameObject _upgradeScrollPanel;
 
     private void Awake()
     {
@@ -26,7 +30,7 @@ public class UIManager : MonoBehaviour
 
     public void AddUpgradeOption(string upgradeName, float initialStat, float newStat, string upgradeDesc, int upgradeCost, byte upgradeIndex)
     {
-        GameObject newPanel = Instantiate(_upgradePanelPrefab, _scrollPanel.transform);
+        GameObject newPanel = Instantiate(_upgradePanelPrefab, _upgradeScrollPanel.transform);
         UpgradePanel newPanelInfo = newPanel.GetComponent<UpgradePanel>();
         newPanelInfo.AssembleStats(upgradeName, initialStat, newStat, upgradeDesc, upgradeCost, upgradeIndex);
     }
@@ -41,41 +45,62 @@ public class UIManager : MonoBehaviour
         _nextWaveTimer.GetComponent<NextWaveTimer>().SetNextWaveTimer(timeLeftInSeconds);
     }
 
-    public void AddBuildOption(string turretName, string turretTier, int cost, byte turretIndex)
+    public void AddBuildOption(string turretName, TurretTierEnum Tier, int cost, byte turretIndex)
     {
-        GameObject newPanel = Instantiate(_buildPanelPrefab, _scrollPanel.transform);
+        GameObject newPanel = Instantiate(_buildPanelPrefab, _buildScrollPanel.transform);
         BuildStatUI newPanelInfo = newPanel.GetComponent<BuildStatUI>();
         newPanelInfo.AssembleBuildPanel(
             turretName,
-            turretTier,
+            Tier,
             cost,
             turretIndex);
     }
 
-    public void ActivateMainUIPanel()
+    public void ActivateBuildMenu()
     {
-        if (!_mainPanel.activeSelf)
+        _buildMenu.SetActive(true);
+        _upgradeMenu.SetActive(false);
+    }
+
+    public void ActivateUpgradeMenu()
+    {
+        _upgradeMenu.SetActive(true);
+        _buildMenu.SetActive(false);
+    }
+
+    public void PullScrollRectToTopBuildMenu()
+    {
+        _buildScrollPanelFrame.GetComponent<ScrollRect>().verticalNormalizedPosition = 1;
+    }
+
+    public void PullScrollRectToTopUpgradeMenu()
+    {
+        _upgradeScrollPanelFrame.GetComponent<ScrollRect>().verticalNormalizedPosition = 1;
+    }
+
+    public void DeactivateBuildMenu()
+    {
+        PlayerCore.Instance.DisableSelectionEffect();
+        _buildMenu.SetActive(false);
+    }
+
+    public void DeactivateUpgradeMenu()
+    {
+            PlayerCore.Instance.DisableSelectionEffect();
+            _upgradeMenu.SetActive(false);
+    }
+
+    public void RemoveAllBuildOptions()
+    {
+        foreach (Transform child in _buildScrollPanel.transform)
         {
-            _mainPanel.SetActive(true);
+            Destroy(child.gameObject);
         }
     }
 
-    public void PullScrollRectToTop()
+    public void RemoveAllUpgradeOptions()
     {
-        _scrollPanelFrame.GetComponent<ScrollRect>().verticalNormalizedPosition = 1;
-    }
-
-    public void DeactivateMainUIPanel()
-    {
-        if (_mainPanel.activeSelf)
-        {
-            _mainPanel.SetActive(false);
-        }
-    }
-
-    public void RemoveAllLeftPanelElements()
-    {
-        foreach (Transform child in _scrollPanel.transform)
+        foreach (Transform child in _upgradeScrollPanel.transform)
         {
             Destroy(child.gameObject);
         }

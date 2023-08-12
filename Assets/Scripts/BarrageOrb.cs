@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class BarrageOrb : MonoBehaviour
 {
-    public Transform Parent { get; set; }
+    [field: SerializeField] public Transform Parent { get; set; }
 
     private void Update()
     {

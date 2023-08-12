@@ -10,7 +10,7 @@ public abstract class BaseTurret : MonoBehaviour
         public string UpgradeName;
         public byte UpgradeIndex;
         public float AddedStat;
-        public float CurrentStat;
+        [NonSerialized] public float CurrentStat;
         public string UpgradeDescription;
         public int Cost;
     }
@@ -42,7 +42,7 @@ public abstract class BaseTurret : MonoBehaviour
 
     public void PopulateUIUpgrades(bool newSelected = false)
     {
-        UIManager.Instance.RemoveAllLeftPanelElements();
+        UIManager.Instance.RemoveAllUpgradeOptions();
         RefreshUpgradesInfo();
 
         foreach (UpgradeClassList upgradeIndex in Upgrades)
@@ -59,7 +59,7 @@ public abstract class BaseTurret : MonoBehaviour
                 upgradeInfo.Cost,
                 upgradeInfo.UpgradeIndex);
         }
-        UIManager.Instance.ActivateMainUIPanel();
-        if (newSelected) UIManager.Instance.PullScrollRectToTop();
+        UIManager.Instance.ActivateUpgradeMenu();
+        if (newSelected) UIManager.Instance.PullScrollRectToTopUpgradeMenu();
     }
 }

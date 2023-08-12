@@ -25,9 +25,9 @@ public class GuardingCircleEnemy : BaseEnemy
         _centerSpriteT.RotateAround(_centerSpriteT.position, new Vector3(0, 0, 1f), _rotationSpeed * Time.deltaTime);
     }
 
-    public override void PrepareEnemy(float health, float movingPower, int uid)
+    public override void PrepareEnemy(float health, float movingPower, int uid, float damage)
     {
-        base.PrepareEnemy(health, movingPower, uid);
+        base.PrepareEnemy(health, movingPower, uid, damage);
         
         foreach(GuardingCircleShield circleShield in _circleShields)
         {

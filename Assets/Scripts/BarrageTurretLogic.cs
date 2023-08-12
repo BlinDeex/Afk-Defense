@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ public class BarrageTurretLogic : BaseTurret
     readonly List<(Transform, BarrageOrb, ParticleSystem)> _outerOrbs = new();
     [SerializeField] GameObject _orbsPrefab;
     [SerializeField] GameObject _projectilePrefab;
-    [SerializeField] int _totalOrbs = 4;
+    [SerializeField] int _startingOrbs = 4;
     [SerializeField] int _shootTicksCooldown = 40;
     [SerializeField] int _ticksBetweenShootSteps = 2;
     int _currentTicksCooldown;
@@ -21,7 +22,12 @@ public class BarrageTurretLogic : BaseTurret
 
     private void Awake()
     {
-        IncreaseOrbs(_totalOrbs);
+        IncreaseOrbs(_startingOrbs);
+
+        UpgradesDict.Add(0, Firerate);
+        UpgradesDict.Add(1, Damage);
+        UpgradesDict.Add(2, Orbs);
+        UpgradesDict.Add(3, ProjectileSpeed);
     }
 
     private void FixedUpdate()
@@ -40,6 +46,7 @@ public class BarrageTurretLogic : BaseTurret
     {
         if(TargetProvider.Instance.TryGetClosestEnemy(_turretRange / 100f, out BaseEnemy enemy))
         {
+            Debug.Log(enemy.UID);
             GameObject projectile = DynamicObjectPooler.Instance.RequestProjectile(_projectilePrefab);
             BarrageProjectile BP = projectile.GetComponent<BarrageProjectile>();
             Vector3 dir = (outerOrb.transform.position - enemy.transform.position).normalized;
@@ -64,7 +71,7 @@ public class BarrageTurretLogic : BaseTurret
 
             for (int i = 0; i < _ticksBetweenShootSteps; i++) yield return new WaitForFixedUpdate();
 
-            //if (!_isShooting) break;
+            if (!_isShooting) break;
 
         }
         _isShooting = false;
@@ -99,6 +106,59 @@ public class BarrageTurretLogic : BaseTurret
 
     public override void ApplyUpgrade(int index)
     {
+        if (Upgrades[index] == null) Debug.LogError($"upgrade with index of {index} doesnt exist!");
+        float statValue = Upgrades[index].UpgradeClass[0].AddedStat;
+        TotalSellValue += (int)(Upgrades[index].UpgradeClass[0].Cost * 0.6f);
+        UpgradesDict[index].Invoke(statValue);
+        Upgrades[index].UpgradeClass.RemoveAt(0);
+        PostUpgradeVisualRefresh();
+        PopulateUIUpgrades();
+    }
+
+    private void PostUpgradeVisualRefresh()
+    {
 
     }
+
+    #region upgrades
+
+    public float? Firerate(float? gainedStat)
+    {
+        if (gainedStat == null) return _shootTicksCooldown;
+
+        _shootTicksCooldown += (int)gainedStat;
+
+        return null;
+    }
+
+    public float? Damage(float? gainedStat)
+    {
+        if (gainedStat == null) return _damage;
+
+        _damage += gainedStat.Value;
+
+        return null;
+    }
+
+    public float? Orbs(float? gainedStat)
+    {
+        if (gainedStat == null) return _outerOrbs.Count;
+
+        IncreaseOrbs((int)gainedStat);
+
+        return null;
+    }
+
+    public float? ProjectileSpeed(float? gainedStat)
+    {
+        if (gainedStat == null) return _projectileSpeed;
+
+        _projectileSpeed += gainedStat.Value;
+
+        return null;
+    }
+
+    
+
+    #endregion
 }

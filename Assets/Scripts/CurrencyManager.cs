@@ -16,11 +16,14 @@ public class CurrencyManager : MonoBehaviour
 
     public int DiamondsAmount { get; private set; }
 
-    
+    [SerializeField] int _startingGold;
+    [SerializeField] int _startingDiamonds;
 
     private void Awake()
     {
         Instance = this;
+        GoldAmount += _startingGold;
+        DiamondsAmount += _startingDiamonds;
         _goldText.text = GoldAmount.ToString();
         _diamondText.text = DiamondsAmount.ToString();
     }

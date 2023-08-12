@@ -21,12 +21,14 @@ public class TargetProvider : MonoBehaviour
     public void RegisterActiveEnemy(BaseEnemy enemy)
     {
         ActiveEnemies.Add(enemy);
+        Debug.Log($"registering {enemy.UID}");
         EnemiesAlive++;
     }
 
     public void RemoveActiveEnemy(BaseEnemy enemy)
     {
-        ActiveEnemies.Remove(enemy);
+        Debug.Log($"removing {enemy.UID} enemy");
+        ActiveEnemies.RemoveAll(x => x == enemy); // need to do this cause of bug adding enemy twice or something
         EnemiesAlive--;
     }
 

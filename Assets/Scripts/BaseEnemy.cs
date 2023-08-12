@@ -32,7 +32,8 @@ public abstract class BaseEnemy : MonoBehaviour
     [SerializeField] GameObject _coinGainEffect;
 
     public bool _freezeMovement;
-    
+    float _damage;
+    bool _dead = false;
 
     [field: SerializeField] public int UID { get; set; }
 
@@ -51,16 +52,16 @@ public abstract class BaseEnemy : MonoBehaviour
         }
     }
 
-    readonly Dictionary<byte, DoTEffect> _effectsOverTimeDict = new();
+    readonly Dictionary<Effect, DoTEffect> _effectsOverTimeDict = new();
 
     private void Awake() // all effects added here
     {
         _effectsOverTimeDict.Add(0, new DoTEffect(Burning));
     }
 
-    public void ApplyEffect(byte effectID, float stat, int lengthInTicks) // projectile or whatever applies effect thru here
+    public void ApplyEffect(Effect effect, float stat, int lengthInTicks) // projectile or whatever applies effect thru here
     {
-        DoTEffect requiredEffect = _effectsOverTimeDict[effectID];
+        DoTEffect requiredEffect = _effectsOverTimeDict[effect];
 
         requiredEffect.Active = true;
         requiredEffect.TicksLeft = lengthInTicks;
@@ -77,7 +78,7 @@ public abstract class BaseEnemy : MonoBehaviour
 
     void Burning() // effect method
     {
-        DoTEffect effect = _effectsOverTimeDict[0];
+        DoTEffect effect = _effectsOverTimeDict[Effect.Burning];
         effect.TicksLeft--;
 
         _currentHealth -= effect.stat;
@@ -109,27 +110,29 @@ public abstract class BaseEnemy : MonoBehaviour
         _currentSpeed = _rb.velocity.sqrMagnitude;
     }
 
-
+    // I need _dead bool to check if last projectile already killed enemy, otherwise this somehow fires
+    // twice when TakeDamage is ran very rapidly TODO: IT STILL RUNS TWICE SOMETIMES
     public void TakeDamage(float damage, int type = -1)
     {
         _currentHealth -= damage;
-        if (_currentHealth <= 0) Killed();
+        if (_currentHealth <= 0 && !_dead)
+        {
+            Killed();
+            _dead = true;
+        }
         UpdateHealthbar();
     }
 
-    public virtual void PrepareEnemy(float health, float movingPower, int uid)
+    public virtual void PrepareEnemy(float health, float movingPower, int uid, float damage)
     {
         UID = uid;
+        _dead = false;
+        _damage = damage;
         _currentHealth = _maxHealth = health;
         defaultMovingPower = movingPower;
         _healthbarScalar.transform.localScale = new Vector3(1, 1, 1);
         _healthBar.SetActive(false);
         CurrentDistanceToFinish = 999;
-    }
-
-    private void OnDisable()
-    {
-        TargetProvider.Instance.RemoveActiveEnemy(this);
     }
 
     void Killed()
@@ -146,12 +149,14 @@ public abstract class BaseEnemy : MonoBehaviour
 
     public void FinishLineReached()
     {
+        HealthManager.Instance.TakeDamage(_damage);
         ReturnEnemy();
     }
 
     public virtual void ReturnEnemy()
     {
-        if(_deathEffectActive)
+        TargetProvider.Instance.RemoveActiveEnemy(this);
+        if (_deathEffectActive)
         DynamicObjectPooler.Instance.RequestInstantEffect(_deathEffect, transform.position, Quaternion.identity, _deathEffectParticlesCount);
         gameObject.SetActive(false);
         DynamicObjectPooler.Instance.ReturnEnemy(gameObject);

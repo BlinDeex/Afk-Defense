@@ -13,10 +13,10 @@ public class BuildStatUI : MonoBehaviour
     int _cost;
     GameObject _correspondingTurretUIModel;
 
-    public void AssembleBuildPanel(string turretName, string turretTier, int cost, byte turretIndex)
+    public void AssembleBuildPanel(string turretName, TurretTierEnum tier, int cost, byte turretIndex)
     {
         _turretNameTM.text = turretName;
-        _tierTM.text = turretTier;
+        _tierTM.text = tier.ToString();
         _costTM.text = cost.ToString();
         _turretIndex = turretIndex;
         _cost = cost;
