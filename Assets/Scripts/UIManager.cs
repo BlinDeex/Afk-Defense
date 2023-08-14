@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -8,8 +6,6 @@ public class UIManager : MonoBehaviour
 {
     [SerializeField] TextMeshProUGUI _waveText;
     [SerializeField] TextMeshProUGUI _nextWaveTimer;
-    Color32 _gray = new(144, 144, 144, 255);
-    Color32 _green = new(0, 154, 0, 255);
     public static UIManager Instance;
 
     [SerializeField] GameObject _buildPanelPrefab;
@@ -23,9 +19,17 @@ public class UIManager : MonoBehaviour
     [SerializeField] GameObject _upgradeScrollPanelFrame;
     [SerializeField] GameObject _upgradeScrollPanel;
 
+    [SerializeField] GameObject _gearButton;
+    [SerializeField] TextMeshProUGUI _sellText;
+
     private void Awake()
     {
         Instance = this;
+    }
+
+    public void ChangeGearButtonState(bool state)
+    {
+        _gearButton.SetActive(state);
     }
 
     public void AddUpgradeOption(string upgradeName, float initialStat, float newStat, string upgradeDesc, int upgradeCost, byte upgradeIndex)
@@ -66,6 +70,11 @@ public class UIManager : MonoBehaviour
     {
         _upgradeMenu.SetActive(true);
         _buildMenu.SetActive(false);
+    }
+
+    public void ChangeSellAmountText(int amount)
+    {
+        _sellText.text = $"+{amount}";
     }
 
     public void PullScrollRectToTopBuildMenu()

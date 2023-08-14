@@ -1,15 +1,18 @@
 using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class HealthManager : MonoBehaviour
 {
     public static HealthManager Instance;
 
-    [SerializeField] ParticleSystem _lineBreakEffect;
+    [SerializeField] GameObject _shockwaveGO;
     [SerializeField] int _lineBreakParticleCount;
+    [SerializeField] int _lineContinueShockwaveCount;
     [SerializeField] bool _enableDeath;
+    [SerializeField] GameObject _gameLostPanel;
+    [SerializeField] float _initialSlowdownStrength;
 
     [SerializeField] TextMeshProUGUI _healthText;
     [SerializeField] LineRenderer finishLine;
@@ -26,6 +29,7 @@ public class HealthManager : MonoBehaviour
     [Header("Debug")]
     [SerializeField] float _lineLerperCurrentValue;
     [SerializeField] float _lineColorTarget;
+    [SerializeField] ParticleSystem _lineBreakEffect;
 
 
     bool _dead;
@@ -37,7 +41,6 @@ public class HealthManager : MonoBehaviour
         _lineLerperCurrentValue = 1;
         UpdateLine();
         UpdateHealthText();
-        
     }
 
     public void TakeDamage(float damage)
@@ -60,7 +63,7 @@ public class HealthManager : MonoBehaviour
     void UpdateLine()
     {
         _lineColorTarget = 1 / _maxHealth * CurrentHealth;
-        Color targetColor = _lineColorGradient.Evaluate(1 - _lineLerperCurrentValue);
+        Color targetColor = _lineColorGradient.Evaluate(_lineLerperCurrentValue);
         finishLine.material.SetColor("_Color", targetColor * _colorMultiplier);
         float lineWidthLerper = Mathf.Lerp(_noHpLineWidth, _fullHpLineWidth, _lineLerperCurrentValue);
         finishLine.widthMultiplier = lineWidthLerper;
@@ -69,16 +72,53 @@ public class HealthManager : MonoBehaviour
     void NoHPLeft()
     {
         finishLine.gameObject.SetActive(false);
+        UIManager.Instance.ChangeGearButtonState(false);
         _lineBreakEffect.Emit(_lineBreakParticleCount);
         _dead = true;
+        Time.timeScale = _initialSlowdownStrength;
+        StartCoroutine(DelayDeathScreen());
+    }
+
+    IEnumerator DelayDeathScreen()
+    {
+        yield return new WaitForSecondsRealtime(3f);
+        Debug.Log("coroutine");
+        _gameLostPanel.SetActive(true);
+        Time.timeScale = 0;
+    }
+
+    public void ContinueGame()
+    {
+        _gameLostPanel.SetActive(false);
+        _shockwaveGO.SetActive(true);
+        UIManager.Instance.ChangeGearButtonState(true);
+        Time.timeScale = 1;
+        CurrentHealth = _maxHealth;
+        _lineLerperCurrentValue = 1;
+        UpdateHealthText();
+        UpdateLine();
+        finishLine.gameObject.SetActive(true);
+        _dead = false;
+
+    }
+
+    public void RestartScene()
+    {
+        Scene scene = SceneManager.GetActiveScene();
+        SceneManager.LoadScene(scene.name);
+        Time.timeScale = 1;
     }
 
     void UpdateHealthText()
     {
         int currentHealth = Mathf.CeilToInt(CurrentHealth);
-        _healthText.text = currentHealth.ToString();
+        if(currentHealth > 0)
+        {
+            _healthText.text = currentHealth.ToString();
+        }
+        else
+        {
+            _healthText.text = "0";
+        }
     }
-
-
-
 }

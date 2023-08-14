@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 public abstract class BaseTurret : MonoBehaviour
@@ -33,11 +32,13 @@ public abstract class BaseTurret : MonoBehaviour
 
     public void RefreshUpgradesInfo()
     {
+
         for (int i = 0; i < Upgrades.Count; i++)
         {
             if (Upgrades[i].UpgradeClass.Count == 0) continue;
             Upgrades[i].UpgradeClass[0].CurrentStat = UpgradesDict[i].Invoke(null).Value;
         }
+        UIManager.Instance.ChangeSellAmountText(TotalSellValue);
     }
 
     public void PopulateUIUpgrades(bool newSelected = false)
@@ -59,6 +60,7 @@ public abstract class BaseTurret : MonoBehaviour
                 upgradeInfo.Cost,
                 upgradeInfo.UpgradeIndex);
         }
+        UIManager.Instance.ChangeSellAmountText(TotalSellValue);
         UIManager.Instance.ActivateUpgradeMenu();
         if (newSelected) UIManager.Instance.PullScrollRectToTopUpgradeMenu();
     }

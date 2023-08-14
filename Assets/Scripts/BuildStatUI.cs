@@ -11,7 +11,6 @@ public class BuildStatUI : MonoBehaviour
     [SerializeField] GameObject _turretModelRoot;
     byte _turretIndex;
     int _cost;
-    GameObject _correspondingTurretUIModel;
 
     public void AssembleBuildPanel(string turretName, TurretTierEnum tier, int cost, byte turretIndex)
     {
@@ -31,6 +30,10 @@ public class BuildStatUI : MonoBehaviour
         if (hasEnoughCoins)
         {
             PlayerCore.Instance.BuildTurret(_turretIndex);
+        }
+        else
+        {
+            Debug.Log("not enough gold to buy this turret!");
         }
     }
 }

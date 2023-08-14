@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-using static UnityEngine.Rendering.DebugUI;
 
 public class SpawnManager : MonoBehaviour
 {
@@ -12,6 +10,7 @@ public class SpawnManager : MonoBehaviour
     [SerializeField] float _health;
     [SerializeField] float _movingPower;
     [SerializeField] float _enemyDamage;
+    [SerializeField] int _coinBounty;
 
     int enemyUID = 1;
 
@@ -120,17 +119,10 @@ public class SpawnManager : MonoBehaviour
 
     private void Awake()
     {
-        
-
         if (_wavesInfo.Count == 0) _wavesFinished = true;
         if (_wavesInfo.Count == 1) _lastWave = true;
 
         _timeForNextPointGain = Time.time; // first gain is instant
-    }
-
-    bool ContainsAny(string[] stringsToContain, string value)
-    {
-        return stringsToContain.Any(value.Contains);
     }
 
     private void Start()
@@ -180,8 +172,6 @@ public class SpawnManager : MonoBehaviour
         {
             if (enemy.Cost <= bank) affordableEnemies.Add(enemy);
         }
-
-        //EnemyInfo[] affordableEnemies = enemyList.Where(x => x.Cost <= bank).ToArray();
 
         if (affordableEnemies.Count == 0) return;
 
@@ -233,7 +223,7 @@ public class SpawnManager : MonoBehaviour
     {
         GameObject enemy = DynamicObjectPooler.Instance.RequestEnemy(basicEnemy);
         BaseEnemy baseEnemy = enemy.GetComponent<BaseEnemy>();
-        baseEnemy.PrepareEnemy(_health, _movingPower, enemyUID, _enemyDamage);
+        baseEnemy.PrepareEnemy(_health, _movingPower, enemyUID, _enemyDamage, _coinBounty);
         enemyUID++;
         enemy.transform.position = _spawnPoint.transform.position + new Vector3(UnityEngine.Random.Range(-4f, 4f), 0, 0);
         enemy.SetActive(true);

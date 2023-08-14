@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
@@ -9,8 +7,6 @@ public class CurrencyManager : MonoBehaviour
 
     [SerializeField] TextMeshProUGUI _goldText;
     [SerializeField] TextMeshProUGUI _diamondText;
-    
-
 
     public int GoldAmount { get; private set; }
 

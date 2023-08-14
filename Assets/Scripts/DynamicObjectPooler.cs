@@ -102,8 +102,7 @@ public class DynamicObjectPooler : MonoBehaviour
 
         ParticleSystem newEffect = Instantiate(effect);
         InstantEffectPools.Add(effect.name, newEffect);
-        newEffect.transform.position = position;
-        newEffect.transform.rotation = rotation;
+        newEffect.transform.SetPositionAndRotation(position, rotation);
         newEffect.Emit(particlesCount);
     }
 

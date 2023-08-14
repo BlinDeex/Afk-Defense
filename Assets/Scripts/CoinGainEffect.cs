@@ -1,7 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
-using Unity.Hierarchy;
 using UnityEngine;
 
 public class CoinGainEffect : MonoBehaviour
@@ -32,9 +29,8 @@ public class CoinGainEffect : MonoBehaviour
 
     public void PrepareCurrencyEffect(int amount)
     {
-        string amountInString = $"+{amount}";
-        _text.text = amountInString;
+        string amountString = $"+{amount}";
+        _text.text = amountString;
         _lerper = 0;
     }
-
 }

@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -12,6 +11,8 @@ public class PlayerCore : MonoBehaviour
     BaseTurret _selectedTurret;
 
     public static PlayerCore Instance;
+
+    [SerializeField] bool _infiniteTurrets;
 
     [System.Serializable]
     public class EquippedTurrets
@@ -114,11 +115,14 @@ public class PlayerCore : MonoBehaviour
     public void BuildTurret(byte index)
     {
         EquippedTurrets turretInfo = EquippedTurretsList.Where(x => x.TurretIndex == index).First();
+        if(!_infiniteTurrets)
         turretInfo.IsPlaced = true;
         Transform slotTransform = EmptySlotsManager.Instance.ReturnSlotPosition(_selectedEmptySlot);
         GameObject newTurret = Instantiate(turretInfo.TurretGO, slotTransform.position, Quaternion.identity);
-        newTurret.GetComponent<BaseTurret>().TurretID = index;
-        newTurret.GetComponent<BaseTurret>().SlotTurretIsBuiltOn = _selectedEmptySlot;
+        BaseTurret BT = newTurret.GetComponent<BaseTurret>();
+        BT.TurretID = index;
+        BT.SlotTurretIsBuiltOn = _selectedEmptySlot;
+        BT.TotalSellValue = turretInfo.Cost;
         UIManager.Instance.DeactivateBuildMenu();
         EmptySlotsManager.Instance.DisableEmptySlot(_selectedEmptySlot);
     }
@@ -130,8 +134,8 @@ public class PlayerCore : MonoBehaviour
         int goldValue = TB.TotalSellValue;
         CurrencyManager.Instance.AddGold(goldValue);
         EmptySlotsManager.Instance.EnableEmptySlot(TB.SlotTurretIsBuiltOn);
-        UIManager.Instance.DeactivateBuildMenu();
+        UIManager.Instance.DeactivateUpgradeMenu();
         EquippedTurretsList.Where(x => x.TurretIndex == equippedTurretIndex).First().IsPlaced = false;
-        Destroy(_selectedTurret);
+        Destroy(_selectedTurret.gameObject);
     }
 }

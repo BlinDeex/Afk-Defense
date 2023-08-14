@@ -54,12 +54,12 @@ public abstract class BaseEnemy : MonoBehaviour
 
     readonly Dictionary<Effect, DoTEffect> _effectsOverTimeDict = new();
 
-    private void Awake() // all effects added here
+    private void Awake()
     {
         _effectsOverTimeDict.Add(0, new DoTEffect(Burning));
     }
 
-    public void ApplyEffect(Effect effect, float stat, int lengthInTicks) // projectile or whatever applies effect thru here
+    public void ApplyEffect(Effect effect, float stat, int lengthInTicks)
     {
         DoTEffect requiredEffect = _effectsOverTimeDict[effect];
 
@@ -68,7 +68,7 @@ public abstract class BaseEnemy : MonoBehaviour
         requiredEffect.stat = stat;
     }
 
-    void RunEffects() // fixed update
+    void RunEffects()
     {
         foreach(DoTEffect effect in _effectsOverTimeDict.Values)
         {
@@ -76,7 +76,7 @@ public abstract class BaseEnemy : MonoBehaviour
         }
     }
 
-    void Burning() // effect method
+    void Burning()
     {
         DoTEffect effect = _effectsOverTimeDict[Effect.Burning];
         effect.TicksLeft--;
@@ -89,7 +89,7 @@ public abstract class BaseEnemy : MonoBehaviour
     virtual public void BaseFixedUpdate()
     {
         percentMovingPowerGainedThisTick = 0;
-        // run effects
+        RunEffects();
         Movement();
     }
 
@@ -123,11 +123,12 @@ public abstract class BaseEnemy : MonoBehaviour
         UpdateHealthbar();
     }
 
-    public virtual void PrepareEnemy(float health, float movingPower, int uid, float damage)
+    public virtual void PrepareEnemy(float health, float movingPower, int uid, float damage, int bounty)
     {
         UID = uid;
         _dead = false;
         _damage = damage;
+        _coinBounty = bounty;
         _currentHealth = _maxHealth = health;
         defaultMovingPower = movingPower;
         _healthbarScalar.transform.localScale = new Vector3(1, 1, 1);
@@ -138,11 +139,12 @@ public abstract class BaseEnemy : MonoBehaviour
     void Killed()
     {
         GameObject coinGainEffect = 
-            DynamicObjectPooler.Instance.RequestCurrencyEffect(
-                _coinGainEffect);
+            DynamicObjectPooler.Instance.RequestCurrencyEffect(_coinGainEffect);
+
         coinGainEffect.transform.position = transform.position + _currencyGainOffsets[UnityEngine.Random.Range(0, _currencyGainOffsets.Length)];
         coinGainEffect.GetComponent<CoinGainEffect>().PrepareCurrencyEffect(_coinBounty);
         coinGainEffect.SetActive(true);
+        
         CurrencyManager.Instance.AddGold(_coinBounty);
         ReturnEnemy();
     }

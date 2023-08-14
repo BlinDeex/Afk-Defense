@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class GuardingCircleShield : MonoBehaviour, INonEnemyObstacle
@@ -9,7 +7,6 @@ public class GuardingCircleShield : MonoBehaviour, INonEnemyObstacle
     [SerializeField] int _particlesCount = 30;
     [SerializeField] ParticleSystem _shieldBreakEffect;
     SpriteRenderer _sp;
-    Material _spMat;
 
     Color32 _startColor = new(0, 0, 255, 255);
     Color32 _endColor = new(255, 0, 0, 255);

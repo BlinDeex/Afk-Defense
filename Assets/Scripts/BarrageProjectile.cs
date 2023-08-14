@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class BarrageProjectile : MonoBehaviour, IProjectile
@@ -71,9 +69,10 @@ public class BarrageProjectile : MonoBehaviour, IProjectile
     private void OnTriggerEnter2D(Collider2D collision)
     {
         DynamicObjectPooler.Instance.RequestInstantEffect(_projectileHitEffect, transform.position, Quaternion.identity, 30);
-        
-        if(collision.TryGetComponent(out BaseEnemy enemy))
+
+        if (collision.TryGetComponent(out BaseEnemy enemy))
         {
+
             enemy.TakeDamage(_damage);
             ReturnProjectile();
             return;

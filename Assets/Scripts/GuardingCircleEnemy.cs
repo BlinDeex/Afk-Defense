@@ -9,7 +9,6 @@ public class GuardingCircleEnemy : BaseEnemy
     [SerializeField] int _killParticlesCount;
     Transform _t;
 
-
     private void Awake()
     {
         _t = GetComponent<Transform>();
@@ -25,9 +24,9 @@ public class GuardingCircleEnemy : BaseEnemy
         _centerSpriteT.RotateAround(_centerSpriteT.position, new Vector3(0, 0, 1f), _rotationSpeed * Time.deltaTime);
     }
 
-    public override void PrepareEnemy(float health, float movingPower, int uid, float damage)
+    public override void PrepareEnemy(float health, float movingPower, int uid, float damage, int bounty)
     {
-        base.PrepareEnemy(health, movingPower, uid, damage);
+        base.PrepareEnemy(health, movingPower, uid, damage, bounty);
         
         foreach(GuardingCircleShield circleShield in _circleShields)
         {

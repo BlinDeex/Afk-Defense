@@ -1,8 +1,5 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class BarrageTurretLogic : BaseTurret
@@ -77,7 +74,7 @@ public class BarrageTurretLogic : BaseTurret
         _isShooting = false;
     }
 
-    void IncreaseOrbs(int amount) // irrelevant
+    void IncreaseOrbs(int amount)
     {
         if (_isShooting) StopCoroutine(ShootCycle());
 
@@ -157,8 +154,6 @@ public class BarrageTurretLogic : BaseTurret
 
         return null;
     }
-
-    
 
     #endregion
 }
