@@ -52,6 +52,7 @@ public class PlayerCore : MonoBehaviour
                 if (hit.collider.CompareTag("Turret"))
                 {
                     BaseTurret BT = hit.collider.GetComponent<BaseTurret>();
+                    Debug.Log("clicked on turret");
                     bool isNew = false;
                     if (_selectedTurret == null) isNew = true;
                     if (!isNew) isNew = _selectedTurret != BT;
@@ -120,9 +121,7 @@ public class PlayerCore : MonoBehaviour
         Transform slotTransform = EmptySlotsManager.Instance.ReturnSlotPosition(_selectedEmptySlot);
         GameObject newTurret = Instantiate(turretInfo.TurretGO, slotTransform.position, Quaternion.identity);
         BaseTurret BT = newTurret.GetComponent<BaseTurret>();
-        BT.TurretID = index;
-        BT.SlotTurretIsBuiltOn = _selectedEmptySlot;
-        BT.TotalSellValue = turretInfo.Cost;
+        BT.BuildTurret(index, _selectedEmptySlot, turretInfo.Cost);
         UIManager.Instance.DeactivateBuildMenu();
         EmptySlotsManager.Instance.DisableEmptySlot(_selectedEmptySlot);
     }
@@ -131,7 +130,7 @@ public class PlayerCore : MonoBehaviour
     {
         BaseTurret TB = _selectedTurret;
         int equippedTurretIndex = TB.TurretID;
-        int goldValue = TB.TotalSellValue;
+        int goldValue = TB.CurrentSellValue;
         CurrencyManager.Instance.AddGold(goldValue);
         EmptySlotsManager.Instance.EnableEmptySlot(TB.SlotTurretIsBuiltOn);
         UIManager.Instance.DeactivateUpgradeMenu();

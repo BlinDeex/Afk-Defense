@@ -25,8 +25,8 @@ public abstract class BaseEnemy : MonoBehaviour
     [SerializeField] bool _deathEffectActive = true;
     [SerializeField] int _deathEffectParticlesCount;
 
-    [SerializeField] float _maxHealth;
-    [SerializeField] float _currentHealth;
+    [field: SerializeField] public float MaxHealth { get; protected set; }
+    [field: SerializeField] public float CurrentHealth { get; protected set; }
 
     [SerializeField] Vector3[] _currencyGainOffsets;
     [SerializeField] GameObject _coinGainEffect;
@@ -81,7 +81,7 @@ public abstract class BaseEnemy : MonoBehaviour
         DoTEffect effect = _effectsOverTimeDict[Effect.Burning];
         effect.TicksLeft--;
 
-        _currentHealth -= effect.stat;
+        CurrentHealth -= effect.stat;
 
         if (effect.TicksLeft <= 0) effect.Active = false;
     }
@@ -100,11 +100,13 @@ public abstract class BaseEnemy : MonoBehaviour
 
     void Movement()
     {
+        CurrentDistanceToFinish = DistancePointToLine(transform.position, _finishLineStart, _finishLineEnd);
+
         if (_freezeMovement) return;
 
         _modifiedMovingPower = defaultMovingPower;
         _modifiedMovingPower *= Math.Clamp(1 + (percentMovingPowerGainedThisTick / 100), 0, 10);
-        CurrentDistanceToFinish = DistancePointToLine(transform.position, _finishLineStart, _finishLineEnd);
+        
 
         _rb.velocity += _modifiedMovingPower * Time.fixedDeltaTime * Vector2.down;
         _currentSpeed = _rb.velocity.sqrMagnitude;
@@ -114,8 +116,8 @@ public abstract class BaseEnemy : MonoBehaviour
     // twice when TakeDamage is ran very rapidly TODO: IT STILL RUNS TWICE SOMETIMES
     public void TakeDamage(float damage, int type = -1)
     {
-        _currentHealth -= damage;
-        if (_currentHealth <= 0 && !_dead)
+        CurrentHealth -= damage;
+        if (CurrentHealth <= 0 && !_dead)
         {
             Killed();
             _dead = true;
@@ -129,7 +131,7 @@ public abstract class BaseEnemy : MonoBehaviour
         _dead = false;
         _damage = damage;
         _coinBounty = bounty;
-        _currentHealth = _maxHealth = health;
+        CurrentHealth = MaxHealth = health;
         defaultMovingPower = movingPower;
         _healthbarScalar.transform.localScale = new Vector3(1, 1, 1);
         _healthBar.SetActive(false);
@@ -166,7 +168,7 @@ public abstract class BaseEnemy : MonoBehaviour
 
     void UpdateHealthbar()
     {
-        float healthPercent = _currentHealth / _maxHealth;
+        float healthPercent = CurrentHealth / MaxHealth;
         _healthbarScalar.transform.localScale = new Vector3(healthPercent, 1, 1);
         _healthBar.SetActive(true);
     }

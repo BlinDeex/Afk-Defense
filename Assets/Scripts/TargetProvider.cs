@@ -6,7 +6,9 @@ public class TargetProvider : MonoBehaviour
 {
     [SerializeField] List<BaseEnemy> ActiveEnemies = new();
 
-    List<BaseEnemy> SortedEnemiesByDistance = new();
+    List<BaseEnemy> EnemiesByDistanceAscending = new();
+    List<BaseEnemy> EnemiesByMaxHealthDescending = new();
+    List<BaseEnemy> EnemiesByCurrentHealthAscending = new();
 
     public static TargetProvider Instance;
 
@@ -32,14 +34,16 @@ public class TargetProvider : MonoBehaviour
 
     private void FixedUpdate()
     {
-        SortedEnemiesByDistance = ActiveEnemies.OrderBy(x => x.CurrentDistanceToFinish).ToList();
+        EnemiesByDistanceAscending = ActiveEnemies.OrderBy(x => x.CurrentDistanceToFinish).ToList();
+        EnemiesByMaxHealthDescending = ActiveEnemies.OrderByDescending(x => x.MaxHealth).ToList();
+        EnemiesByCurrentHealthAscending = ActiveEnemies.OrderBy(x => x.CurrentHealth).ToList();
     }
 
     public bool TryGetClosestEnemy(float range, out BaseEnemy result)
     {
-        for (int i = 0; i < SortedEnemiesByDistance.Count; i++)
+        for (int i = 0; i < EnemiesByDistanceAscending.Count; i++)
         {
-            BaseEnemy enemy = SortedEnemiesByDistance[i];
+            BaseEnemy enemy = EnemiesByDistanceAscending[i];
             if (enemy.CurrentDistanceToFinish <= range)
             {
                 result = enemy;
@@ -49,4 +53,50 @@ public class TargetProvider : MonoBehaviour
         result = default;
         return false;
     }
+
+    public bool TryGetFurthestEnemy(float range, out BaseEnemy result)
+    {
+        for(int i = EnemiesByDistanceAscending.Count - 1; i > 0; i--)
+        {
+            BaseEnemy enemy = EnemiesByDistanceAscending[i];
+            if(enemy.CurrentDistanceToFinish <= range)
+            {
+                result = enemy;
+                return true;
+            }
+        }
+        result = default;
+        return false;
+    }
+
+    public bool TryGetStrongestEnemy(float range, out BaseEnemy result)
+    {
+        for (int i = 0; i < EnemiesByMaxHealthDescending.Count; i++)
+        {
+            BaseEnemy enemy = EnemiesByMaxHealthDescending[i];
+            if (enemy.CurrentDistanceToFinish <= range)
+            {
+                result = enemy;
+                return true;
+            }
+        }
+        result = default;
+        return false;
+    }
+
+    public bool TryGetWeakestEnemy(float range, out BaseEnemy result)
+    {
+        for (int i = 0; i < EnemiesByCurrentHealthAscending.Count; i++)
+        {
+            BaseEnemy enemy = EnemiesByCurrentHealthAscending[i];
+            if (enemy.CurrentDistanceToFinish <= range)
+            {
+                result = enemy;
+                return true;
+            }
+        }
+        result = default;
+        return false;
+    }
+
 }

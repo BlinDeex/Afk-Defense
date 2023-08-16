@@ -14,6 +14,20 @@ public enum Effect
     Freezing = 1
 }
 
+public enum TargetingType
+{
+    First,
+    Last,
+    Strongest,
+    Weakest
+}
+
+public enum TargetingBehaviour
+{
+    Sticky,
+    NonSticky
+}
+
 
 public enum EasingsList
 {

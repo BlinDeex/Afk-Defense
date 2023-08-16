@@ -180,9 +180,9 @@ MonoBehaviour:
       AddedStat: 5
       UpgradeDescription: Increases projectile speed
       Cost: 500
-  TurretID: 0
-  SlotTurretIsBuiltOn: 0
-  TotalSellValue: 0
+  _targetingType: 0
+  _targetingBehaviour: 0
+  <Range>k__BackingField: 1.4
   _orbsPrefab: {fileID: 2935057210344782742, guid: add84ad509bc26e48a024c358c5674a7, type: 3}
   _projectilePrefab: {fileID: 7041009083633587837, guid: 587b4b3cad85dbf48bf3e640a2c95128, type: 3}
   _startingOrbs: 3
@@ -190,7 +190,6 @@ MonoBehaviour:
   _ticksBetweenShootSteps: 6
   _damage: 50
   _projectileSpeed: 10
-  _turretRange: 100
 --- !u!58 &3464749977403077157
 CircleCollider2D:
   m_ObjectHideFlags: 0

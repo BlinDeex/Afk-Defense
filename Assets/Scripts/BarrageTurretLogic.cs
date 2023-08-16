@@ -13,7 +13,6 @@ public class BarrageTurretLogic : BaseTurret
     int _currentTicksCooldown;
     [SerializeField] float _damage;
     [SerializeField] float _projectileSpeed;
-    [SerializeField] float _turretRange;
     bool _isShooting;
     Vector3 _offset = new(0, 0.5f, 0);
 
@@ -39,23 +38,6 @@ public class BarrageTurretLogic : BaseTurret
         }
     }
 
-    bool TryShoot(Transform outerOrb, ParticleSystem shootPS)
-    {
-        if(TargetProvider.Instance.TryGetClosestEnemy(_turretRange / 100f, out BaseEnemy enemy))
-        {
-            Debug.Log(enemy.UID);
-            GameObject projectile = DynamicObjectPooler.Instance.RequestProjectile(_projectilePrefab);
-            BarrageProjectile BP = projectile.GetComponent<BarrageProjectile>();
-            Vector3 dir = (outerOrb.transform.position - enemy.transform.position).normalized;
-            projectile.transform.position = outerOrb.position;
-            BP.PrepareProjectile(enemy, _damage, _projectileSpeed, -dir);
-            shootPS.Emit(30);
-            projectile.SetActive(true);
-            return true;
-        }
-        return false;
-    }
-
     IEnumerator ShootCycle()
     {
         foreach ((Transform, BarrageOrb, ParticleSystem) outerOrb in _outerOrbs)
@@ -72,6 +54,25 @@ public class BarrageTurretLogic : BaseTurret
 
         }
         _isShooting = false;
+    }
+
+    bool TryShoot(Transform outerOrb, ParticleSystem shootPS)
+    {
+        UpdateTarget();
+
+        if (HasTarget)
+        {
+            GameObject projectile = DynamicObjectPooler.Instance.RequestProjectile(_projectilePrefab);
+            BarrageProjectile BP = projectile.GetComponent<BarrageProjectile>();
+            Vector3 dir = (outerOrb.transform.position - CurrentTarget.transform.position).normalized;
+            projectile.transform.position = outerOrb.position;
+            BP.PrepareProjectile(CurrentTarget, _damage, _projectileSpeed, -dir);
+            shootPS.Emit(30);
+            projectile.SetActive(true);
+            return true;
+        }
+
+        return false;
     }
 
     void IncreaseOrbs(int amount)
@@ -99,22 +100,6 @@ public class BarrageTurretLogic : BaseTurret
             }
         }
         _isShooting = false;
-    }
-
-    public override void ApplyUpgrade(int index)
-    {
-        if (Upgrades[index] == null) Debug.LogError($"upgrade with index of {index} doesnt exist!");
-        float statValue = Upgrades[index].UpgradeClass[0].AddedStat;
-        TotalSellValue += (int)(Upgrades[index].UpgradeClass[0].Cost * 0.6f);
-        UpgradesDict[index].Invoke(statValue);
-        Upgrades[index].UpgradeClass.RemoveAt(0);
-        PostUpgradeVisualRefresh();
-        PopulateUIUpgrades();
-    }
-
-    private void PostUpgradeVisualRefresh()
-    {
-
     }
 
     #region upgrades
@@ -156,4 +141,9 @@ public class BarrageTurretLogic : BaseTurret
     }
 
     #endregion
+
+    public override void PostUpgradeVisualRefresh()
+    {
+
+    }
 }

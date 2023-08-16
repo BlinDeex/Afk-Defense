@@ -10744,6 +10744,14 @@ MonoBehaviour:
     TurretIndex: 0
     TurretUIModel: {fileID: 3648144862627959950, guid: 8883cdd1b620c5c4c9e43d3580a95034, type: 3}
     Description: Turret with rapid firerate
+  - Name: Inferno Turret
+    Tier: 2
+    Cost: 1100
+    TurretGO: {fileID: 5687227279512683691, guid: c9cf9c60ec82c904ebb3b313548a0b40, type: 3}
+    IsPlaced: 0
+    TurretIndex: 1
+    TurretUIModel: {fileID: 2654813598549550732, guid: 9f70be13b3671394aa80feccd9ef106d, type: 3}
+    Description: Turret with high single target damage
 --- !u!4 &518780777
 Transform:
   m_ObjectHideFlags: 0
@@ -16333,8 +16341,8 @@ MonoBehaviour:
   _enemyPrefab: {fileID: 390292797862924107, guid: 12de6e93a8988914a81e9120352eda4e, type: 3}
   _spawnPoint: {fileID: 595326313}
   _cooldownInTicks: 2
-  _health: 100
-  _movingPower: 5
+  _health: 2000
+  _movingPower: 1
   _enemyDamage: 10
   _coinBounty: 0
   _basicEnemyList:
@@ -16350,7 +16358,7 @@ MonoBehaviour:
   _maxTicksWithNoSpawn: 500
   _minimumBasicEnemySpawn: 2
   _maximumBasicEnemySpawn: 6
-  _maximumEnemies: 500
+  _maximumEnemies: 17
   _spawnAccordingToEnemiesAlive: 0
   _minEnemyCount: 0
   _maxEnemyCount: 200
@@ -16370,13 +16378,7 @@ MonoBehaviour:
   - PointsGainInfoThisWave:
     - buggedField: 0
       BasicPointsGained: 5000
-      MediumPointsGained: 40
-      BossPointsGained: 0
-      SpecialPointsGained: 0
-      TimeInSecondsForNextGain: 2
-    - buggedField: 0
-      BasicPointsGained: 0
-      MediumPointsGained: 40
+      MediumPointsGained: 5000
       BossPointsGained: 0
       SpecialPointsGained: 0
       TimeInSecondsForNextGain: 2
@@ -20471,6 +20473,79 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!1001 &1680310102186235216
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 4107776694524991302, guid: c9cf9c60ec82c904ebb3b313548a0b40, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.046616077
+      objectReference: {fileID: 0}
+    - target: {fileID: 4107776694524991302, guid: c9cf9c60ec82c904ebb3b313548a0b40, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -8.105486
+      objectReference: {fileID: 0}
+    - target: {fileID: 4107776694524991302, guid: c9cf9c60ec82c904ebb3b313548a0b40, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4107776694524991302, guid: c9cf9c60ec82c904ebb3b313548a0b40, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4107776694524991302, guid: c9cf9c60ec82c904ebb3b313548a0b40, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4107776694524991302, guid: c9cf9c60ec82c904ebb3b313548a0b40, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4107776694524991302, guid: c9cf9c60ec82c904ebb3b313548a0b40, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4107776694524991302, guid: c9cf9c60ec82c904ebb3b313548a0b40, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4107776694524991302, guid: c9cf9c60ec82c904ebb3b313548a0b40, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4107776694524991302, guid: c9cf9c60ec82c904ebb3b313548a0b40, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5687227279512683691, guid: c9cf9c60ec82c904ebb3b313548a0b40, type: 3}
+      propertyPath: m_Name
+      value: FlameLaserTurretRoot
+      objectReference: {fileID: 0}
+    - target: {fileID: 5937580896038263600, guid: c9cf9c60ec82c904ebb3b313548a0b40, type: 3}
+      propertyPath: _targetingType
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5937580896038263600, guid: c9cf9c60ec82c904ebb3b313548a0b40, type: 3}
+      propertyPath: _flameRampUpSpeed
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5937580896038263600, guid: c9cf9c60ec82c904ebb3b313548a0b40, type: 3}
+      propertyPath: <Range>k__BackingField
+      value: 1.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 5937580896038263600, guid: c9cf9c60ec82c904ebb3b313548a0b40, type: 3}
+      propertyPath: _ticksBeforeRetargeting
+      value: 8
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: c9cf9c60ec82c904ebb3b313548a0b40, type: 3}
 --- !u!114 &1711830773230874478
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -22281,3 +22356,4 @@ SceneRoots:
   - {fileID: 583053616}
   - {fileID: 5391107135297869728}
   - {fileID: 1153190161}
+  - {fileID: 1680310102186235216}

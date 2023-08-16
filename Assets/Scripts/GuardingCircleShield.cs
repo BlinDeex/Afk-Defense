@@ -27,20 +27,20 @@ public class GuardingCircleShield : MonoBehaviour, INonEnemyObstacle
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        IProjectile IProj = collision.GetComponent<IProjectile>();
+        BaseProjectile projectileBase = collision.GetComponent<BaseProjectile>();
         Vector2 hitPoint;
-        Vector2 lastDir = IProj.ReturnLastProjectileDirection();
-        if (IProj.HasHitPointValue())
+        Vector2 lastDir = projectileBase._lastVelocityDirNormalized;
+        if (projectileBase._hasHitPoint)
         {
-            hitPoint = IProj.ReturnRaycastHitPoint();
+            hitPoint = projectileBase._lastHitPoint;
         }
         else
         {
             hitPoint = collision.transform.position;
         }
 
-        float damageTaken = IProj.ReturnProjectileDamage();
-        IProj.NonEnemyHitReturnProjectile();
+        float damageTaken = projectileBase._projectileDamage;
+        projectileBase.NonEnemyHitReturnProjectile();
         Debug.Log("projectile hit shield");
 
         ParticleSystem borrowedEffect = DynamicObjectPooler.Instance.BorrowEffect(_hitEffect);
