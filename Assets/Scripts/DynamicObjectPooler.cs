@@ -3,11 +3,11 @@ using UnityEngine;
 
 public class DynamicObjectPooler : MonoBehaviour
 {
-    public Dictionary<string, Queue<GameObject>> EnemyPools = new();
-    public Dictionary<string, ParticleSystem> InstantEffectPools = new();
-    public Dictionary<string, Queue<ParticleSystem>> EffectPools = new();
-    public Dictionary<string, Queue<GameObject>> ProjectilePools = new();
-    public Dictionary<string, Queue<GameObject>> CurrencyEffectPools = new();
+    Dictionary<string, Queue<GameObject>> EnemyPools = new();
+    Dictionary<string, ParticleSystem> InstantEffectPools = new();
+    Dictionary<string, Queue<ParticleSystem>> EffectPools = new();
+    Dictionary<string, Queue<GameObject>> ProjectilePools = new();
+    Dictionary<string, Queue<GameObject>> CurrencyEffectPools = new();
 
     class DelayedPool
     {

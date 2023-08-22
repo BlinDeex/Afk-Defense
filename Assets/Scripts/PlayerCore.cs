@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -7,14 +8,19 @@ public class PlayerCore : MonoBehaviour
 
     GameObject _currentInnerSelectionEffect;
 
-    int _selectedEmptySlot;
+    [SerializeField] EmptySlot _selectedEmptySlot;
+
+    public float OffensiveSlotDamageMultiplier { get; private set; }
+
+    public float DefensiveSlotDamageMultiplier { get; private set; }
+
     BaseTurret _selectedTurret;
 
     public static PlayerCore Instance;
 
     [SerializeField] bool _infiniteTurrets;
 
-    [System.Serializable]
+    [Serializable]
     public class EquippedTurrets
     {
         public string Name;
@@ -22,16 +28,22 @@ public class PlayerCore : MonoBehaviour
         public int Cost;
         public GameObject TurretGO;
         public bool IsPlaced;
-        public byte TurretIndex;
+        [NonSerialized] public byte TurretIndex;
         public GameObject TurretUIModel;
         public string Description;
     }
 
     [SerializeField] public List<EquippedTurrets> EquippedTurretsList;
 
+    public List<BaseTurret> BuiltTurrets = new();
+
     private void Awake()
     {
         Instance = this;
+        for(byte i = 0; i < EquippedTurretsList.Count; i++)
+        {
+            EquippedTurretsList[i].TurretIndex = i;
+        }
     }
 
     void Update()
@@ -58,7 +70,7 @@ public class PlayerCore : MonoBehaviour
                     if (!isNew) isNew = _selectedTurret != BT;
                     if (isNew) _selectedTurret = BT;
 
-                    BT.PopulateUIUpgrades(isNew);
+                    BT.TurretSelected(isNew);
                     return;
                 }
                 if (hit.collider.CompareTag("Leader"))
@@ -68,7 +80,10 @@ public class PlayerCore : MonoBehaviour
                 }
                 if (hit.collider.CompareTag("EmptySlot"))
                 {
-                    _selectedEmptySlot = hit.collider.gameObject.GetComponent<EmptySlot>().SlotID;
+                    Debug.Log(hit.collider.name + " empty slot was clicked");
+                    EmptySlot slot = hit.collider.gameObject.GetComponent<EmptySlot>();
+                    _selectedEmptySlot = slot;
+                    
                     AssembleBuildMenu();
                     EnableSelectionEffect();
                     return;
@@ -84,7 +99,7 @@ public class PlayerCore : MonoBehaviour
 
     void EnableSelectionEffect()
     {
-        Transform slotT = EmptySlotsManager.Instance.ReturnSlotPosition(_selectedEmptySlot);
+        Transform slotT = _selectedEmptySlot.transform;
         GameObject innerSelectionGO = Instantiate(_selectionPrefab, slotT.transform.position + new Vector3(0,0.3f,0), Quaternion.identity);
         innerSelectionGO.GetComponent<SelectionTrailRotation>().PrepareEffect(0.3f, -360, 0, slotT);
         _currentInnerSelectionEffect = innerSelectionGO;
@@ -113,17 +128,22 @@ public class PlayerCore : MonoBehaviour
         UIManager.Instance.ActivateBuildMenu();
     }
 
+    public void ChangeTurretTargetingType() => _selectedTurret.ChangeTargetingType();
+
+    public void ChangeTurretTargetingBehaviour() => _selectedTurret.ChangeTargetingBehaviour();
+
     public void BuildTurret(byte index)
     {
         EquippedTurrets turretInfo = EquippedTurretsList.Where(x => x.TurretIndex == index).First();
         if(!_infiniteTurrets)
         turretInfo.IsPlaced = true;
-        Transform slotTransform = EmptySlotsManager.Instance.ReturnSlotPosition(_selectedEmptySlot);
+        Transform slotTransform = EmptySlotsManager.Instance.ReturnSlotPosition(_selectedEmptySlot.SlotID);
         GameObject newTurret = Instantiate(turretInfo.TurretGO, slotTransform.position, Quaternion.identity);
         BaseTurret BT = newTurret.GetComponent<BaseTurret>();
         BT.BuildTurret(index, _selectedEmptySlot, turretInfo.Cost);
+        BuiltTurrets.Add(BT);
         UIManager.Instance.DeactivateBuildMenu();
-        EmptySlotsManager.Instance.DisableEmptySlot(_selectedEmptySlot);
+        EmptySlotsManager.Instance.DisableEmptySlot(_selectedEmptySlot.SlotID);
     }
 
     public void SellTurret()
@@ -132,9 +152,10 @@ public class PlayerCore : MonoBehaviour
         int equippedTurretIndex = TB.TurretID;
         int goldValue = TB.CurrentSellValue;
         CurrencyManager.Instance.AddGold(goldValue);
-        EmptySlotsManager.Instance.EnableEmptySlot(TB.SlotTurretIsBuiltOn);
+        EmptySlotsManager.Instance.EnableEmptySlot(TB.SlotID);
         UIManager.Instance.DeactivateUpgradeMenu();
         EquippedTurretsList.Where(x => x.TurretIndex == equippedTurretIndex).First().IsPlaced = false;
+        BuiltTurrets.Remove(_selectedTurret);
         Destroy(_selectedTurret.gameObject);
     }
 }

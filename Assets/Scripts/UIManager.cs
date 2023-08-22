@@ -22,6 +22,15 @@ public class UIManager : MonoBehaviour
     [SerializeField] GameObject _gearButton;
     [SerializeField] TextMeshProUGUI _sellText;
 
+    [SerializeField] TextMeshProUGUI _turretTargetingTypeText;
+    [SerializeField] TextMeshProUGUI _turretTargetingBehaviourText;
+
+    [SerializeField] GameObject _turretTargetingTypeButton;
+    [SerializeField] GameObject _turretTargetingBehaviourButton;
+
+    [SerializeField] GameObject _rangeIndicator;
+    const float RANGE_MULTIPLIER = 9.388f;
+
     private void Awake()
     {
         Instance = this;
@@ -30,6 +39,22 @@ public class UIManager : MonoBehaviour
     public void ChangeGearButtonState(bool state)
     {
         _gearButton.SetActive(state);
+    }
+
+    public void EnableRangeIndicator(float range)
+    {
+        _rangeIndicator.transform.localPosition = new Vector3(0, range * RANGE_MULTIPLIER, 0);
+        _rangeIndicator.SetActive(true);
+    }
+
+    public void UpdateRangeIndicator(float range)
+    {
+        _rangeIndicator.transform.localPosition = new Vector3(0, range * RANGE_MULTIPLIER, 0);
+    }
+
+    public void DisableRangeIndicator()
+    {
+        _rangeIndicator.SetActive(false);
     }
 
     public void AddUpgradeOption(string upgradeName, float initialStat, float newStat, string upgradeDesc, int upgradeCost, byte upgradeIndex)
@@ -60,15 +85,24 @@ public class UIManager : MonoBehaviour
             turretIndex);
     }
 
+    public void UpdateTurretTargetingTexts(TargetingType type, TargetingBehaviour behaviour)
+    {
+        _turretTargetingTypeText.text = type.ToString();
+        _turretTargetingBehaviourText.text = behaviour.ToString();
+    }
+
     public void ActivateBuildMenu()
     {
         _buildMenu.SetActive(true);
         _upgradeMenu.SetActive(false);
     }
 
-    public void ActivateUpgradeMenu()
+    public void ActivateUpgradeMenu(bool hasTargeting)
     {
+        _turretTargetingTypeButton.SetActive(hasTargeting);
+        _turretTargetingBehaviourButton.SetActive(hasTargeting);
         _upgradeMenu.SetActive(true);
+
         _buildMenu.SetActive(false);
     }
 
@@ -95,8 +129,9 @@ public class UIManager : MonoBehaviour
 
     public void DeactivateUpgradeMenu()
     {
-            PlayerCore.Instance.DisableSelectionEffect();
-            _upgradeMenu.SetActive(false);
+        PlayerCore.Instance.DisableSelectionEffect();
+        DisableRangeIndicator();
+        _upgradeMenu.SetActive(false);
     }
 
     public void RemoveAllBuildOptions()

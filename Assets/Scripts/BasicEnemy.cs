@@ -8,4 +8,9 @@ public class BasicEnemy : BaseEnemy
     {
         base.BaseFixedUpdate();
     }
+
+    private void Awake()
+    {
+        BaseAwake();
+    }
 }

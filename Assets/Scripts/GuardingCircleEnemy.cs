@@ -11,6 +11,8 @@ public class GuardingCircleEnemy : BaseEnemy
 
     private void Awake()
     {
+        BaseAwake();
+
         _t = GetComponent<Transform>();
     }
 

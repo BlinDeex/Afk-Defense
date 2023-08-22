@@ -30,10 +30,18 @@ public abstract class BaseEnemy : MonoBehaviour
 
     [SerializeField] Vector3[] _currencyGainOffsets;
     [SerializeField] GameObject _coinGainEffect;
+    [SerializeField] Transform _mostBottomPoint;
+
+    [SerializeField] SpriteRenderer _spriteRenderer;
+
+    public bool CurrentlyDead { get; protected set; }
 
     public bool _freezeMovement;
     float _damage;
     bool _dead = false;
+
+    [Header("Temporary Visible")]
+    [SerializeField] float _damageTakenMultiplier = 1f;
 
     [field: SerializeField] public int UID { get; set; }
 
@@ -43,29 +51,63 @@ public abstract class BaseEnemy : MonoBehaviour
     {
         public bool Active;
         public int TicksLeft;
-        public float stat;
+        public float Stat;
+        /// <summary>
+        /// Applies stat only once then while effect is running stat is overwritten if new stat is provided
+        /// </summary>
+        public bool NotContinuousApplier { get; private set; }
         public Action Implementation { get; private set; }
+        public Action<float> OnDemandApplier { get; private set; }
 
-        public DoTEffect(Action implementation)
+        public DoTEffect(Action implementation, bool notContinuousApplier = false, Action<float> onDemandApplier = null)
         {
             Implementation = implementation;
+            NotContinuousApplier = notContinuousApplier;
+            OnDemandApplier = onDemandApplier;
         }
     }
 
-    readonly Dictionary<Effect, DoTEffect> _effectsOverTimeDict = new();
+    readonly Dictionary<EnemyEffect, DoTEffect> _effectsOverTimeDict = new();
+    readonly Dictionary<EnemyEffect, ParticleSystem> _activeEffectParticleSystems = new();
 
-    private void Awake()
+    /// <summary>
+    /// must run first in Awake method
+    /// </summary>
+    protected void BaseAwake()
     {
-        _effectsOverTimeDict.Add(0, new DoTEffect(Burning));
+        _effectsOverTimeDict.Add(EnemyEffect.Burning, new DoTEffect(Burning));
+        _effectsOverTimeDict.Add(EnemyEffect.Alienated, new DoTEffect(Alienated, true, AlienatedOnDemand));
+        _damageTakenMultiplier = 1f;
     }
 
-    public void ApplyEffect(Effect effect, float stat, int lengthInTicks)
+    /// <summary>
+    /// Projectile applies effect on hit through here
+    /// </summary>
+    /// <param name="effect">enum of all existing effect types</param>
+    /// <param name="stat">abstract stat added used for particular purpose in effect method</param>
+    /// <param name="lengthInTicks"></param>
+    public void ApplyEffect(EnemyEffect effect, float stat, int lengthInTicks, ParticleSystem effectPS, int emissionRate)
     {
+        if (_dead) return;
+
         DoTEffect requiredEffect = _effectsOverTimeDict[effect];
+
+        if (requiredEffect.NotContinuousApplier) requiredEffect.OnDemandApplier.Invoke(stat);
+
+        if (!requiredEffect.Active)
+        {
+            ParticleSystem effectVisuals = DynamicObjectPooler.Instance.BorrowEffect(effectPS);
+            var emission = effectVisuals.emission;
+            emission.rateOverTime = emissionRate;
+            var shape = effectVisuals.shape;
+            shape.spriteRenderer = _spriteRenderer;
+            effectVisuals.Play();
+            _activeEffectParticleSystems.Add(effect, effectVisuals);
+        }
 
         requiredEffect.Active = true;
         requiredEffect.TicksLeft = lengthInTicks;
-        requiredEffect.stat = stat;
+        requiredEffect.Stat = stat;
     }
 
     void RunEffects()
@@ -78,12 +120,40 @@ public abstract class BaseEnemy : MonoBehaviour
 
     void Burning()
     {
-        DoTEffect effect = _effectsOverTimeDict[Effect.Burning];
+        DoTEffect effect = _effectsOverTimeDict[EnemyEffect.Burning];
         effect.TicksLeft--;
 
-        CurrentHealth -= effect.stat;
+        CurrentHealth -= effect.Stat;
 
         if (effect.TicksLeft <= 0) effect.Active = false;
+    }
+
+    private void Alienated()
+    {
+        DoTEffect effect = _effectsOverTimeDict[EnemyEffect.Alienated];
+        effect.TicksLeft--;
+
+        if (effect.TicksLeft <= 0)
+        {
+            effect.Active = false;
+            _damageTakenMultiplier -= effect.Stat;
+            ParticleSystem effectPS = _activeEffectParticleSystems[EnemyEffect.Alienated];
+            effectPS.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+            _activeEffectParticleSystems.Remove(EnemyEffect.Alienated);
+        }
+    }
+
+    private void AlienatedOnDemand(float newStat)
+    {
+        DoTEffect effect = _effectsOverTimeDict[EnemyEffect.Alienated];
+
+        if (effect.Active && effect.Stat != newStat)
+        {
+            _damageTakenMultiplier += newStat - effect.Stat;
+            return;
+        }
+
+        if(!effect.Active) _damageTakenMultiplier += newStat;
     }
 
     virtual public void BaseFixedUpdate()
@@ -91,6 +161,30 @@ public abstract class BaseEnemy : MonoBehaviour
         percentMovingPowerGainedThisTick = 0;
         RunEffects();
         Movement();
+        UpdateParticleSystemsPositions();
+    }
+
+    private void UpdateParticleSystemsPositions()
+    {
+        foreach(ParticleSystem PS in _activeEffectParticleSystems.Values)
+        {
+            PS.transform.position = transform.position;
+        }
+    }
+
+    private void ResetAllEffects()
+    {
+        foreach(ParticleSystem PS in _activeEffectParticleSystems.Values)
+        {
+            PS.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+            DynamicObjectPooler.Instance.ReturnBorrowedEffect(PS);
+        }
+
+        _activeEffectParticleSystems.Clear();
+        foreach(DoTEffect effect in _effectsOverTimeDict.Values)
+        {
+            effect.Active = false;
+        }
     }
 
     float DistancePointToLine(Vector2 p, Vector2 a, Vector2 b)
@@ -100,7 +194,7 @@ public abstract class BaseEnemy : MonoBehaviour
 
     void Movement()
     {
-        CurrentDistanceToFinish = DistancePointToLine(transform.position, _finishLineStart, _finishLineEnd);
+        CurrentDistanceToFinish = DistancePointToLine(_mostBottomPoint.position, _finishLineStart, _finishLineEnd);
 
         if (_freezeMovement) return;
 
@@ -114,15 +208,15 @@ public abstract class BaseEnemy : MonoBehaviour
 
     // I need _dead bool to check if last projectile already killed enemy, otherwise this somehow fires
     // twice when TakeDamage is ran very rapidly TODO: IT STILL RUNS TWICE SOMETIMES
-    public void TakeDamage(float damage, int type = -1)
+    public void TakeDamage(float damage, int type = -1) // Projectile on hit runs this method to deal contact damage
     {
-        CurrentHealth -= damage;
+        CurrentHealth -= damage * _damageTakenMultiplier;
+        UpdateHealthbar();
         if (CurrentHealth <= 0 && !_dead)
         {
             Killed();
             _dead = true;
         }
-        UpdateHealthbar();
     }
 
     public virtual void PrepareEnemy(float health, float movingPower, int uid, float damage, int bounty)
@@ -136,6 +230,7 @@ public abstract class BaseEnemy : MonoBehaviour
         _healthbarScalar.transform.localScale = new Vector3(1, 1, 1);
         _healthBar.SetActive(false);
         CurrentDistanceToFinish = 999;
+        CurrentlyDead = false;
     }
 
     void Killed()
@@ -159,7 +254,9 @@ public abstract class BaseEnemy : MonoBehaviour
 
     public virtual void ReturnEnemy()
     {
+        ResetAllEffects();
         TargetProvider.Instance.RemoveActiveEnemy(this);
+        CurrentlyDead = true;
         if (_deathEffectActive)
         DynamicObjectPooler.Instance.RequestInstantEffect(_deathEffect, transform.position, Quaternion.identity, _deathEffectParticlesCount);
         gameObject.SetActive(false);

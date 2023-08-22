@@ -8,10 +8,30 @@ public enum TurretTierEnum
     Artifact
 }
 
-public enum Effect
+public enum EnemyEffect
 {
     Burning = 0,
-    Freezing = 1
+    Freezing = 1,
+    Alienated = 2
+}
+
+public enum TurretEffect
+{
+    AquaPulseBuffer,
+
+}
+
+public enum SlotType
+{
+    Defensive,
+    Offensive,
+    Leader
+}
+
+public enum TurretType
+{
+    Offensive,
+    Defensive
 }
 
 public enum TargetingType

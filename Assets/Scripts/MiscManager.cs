@@ -12,7 +12,8 @@ public class MiscManager : MonoBehaviour
     {
         Instance = this;
 
-        Application.targetFrameRate = 60;
+        Application.targetFrameRate = (int)Screen.currentResolution.refreshRateRatio.value;
+        
     }
 
     public void PauseGame()

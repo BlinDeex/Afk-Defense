@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class BarrageTurretLogic : BaseTurret
@@ -18,6 +19,8 @@ public class BarrageTurretLogic : BaseTurret
 
     private void Awake()
     {
+        BaseEarlyAwake();
+
         IncreaseOrbs(_startingOrbs);
 
         UpgradesDict.Add(0, Firerate);
@@ -28,6 +31,8 @@ public class BarrageTurretLogic : BaseTurret
 
     private void FixedUpdate()
     {
+        BaseEarlyFixedUpdate();
+
         if (!_isShooting) _currentTicksCooldown--;
 
         if (_currentTicksCooldown <= 0)
@@ -36,6 +41,8 @@ public class BarrageTurretLogic : BaseTurret
             _currentTicksCooldown = _shootTicksCooldown;
             StartCoroutine(ShootCycle());
         }
+
+        BaseLateFixedUpdate();
     }
 
     IEnumerator ShootCycle()
